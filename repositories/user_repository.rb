@@ -29,4 +29,8 @@ class UserRepository
   def insert(user)
     @ds.insert(Mapper.to_db(user))
   end
+
+  def contains_user_with_username?(username)
+    @ds.where(:username => username).count > 0
+  end
 end

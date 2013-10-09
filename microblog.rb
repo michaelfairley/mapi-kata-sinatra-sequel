@@ -10,6 +10,7 @@ $LOAD_PATH.unshift File.dirname(__FILE__)
 FILES = []
 FILES << "models/user.rb"
 FILES << "repositories/user_repository.rb"
+FILES << "validators/user_validator.rb"
 
 FILES.each do |file|
   load File.join(File.dirname(__FILE__), file)
@@ -26,6 +27,7 @@ class Microblog < Sinatra::Base
   configure do
     db = Sequel.connect('postgres://localhost/microblog_api_kata')
     set :user_repository, UserRepository.new(db)
+    set :user_validator, UserValidator.new(settings.user_repository)
   end
 
   before do
@@ -34,7 +36,11 @@ class Microblog < Sinatra::Base
 
   helpers do
     def request_json
-      JSON.parse(request.body.read)
+      @request_json ||= JSON.parse(request.body.read)
+    end
+
+    def validation_error_response(validation_errors)
+      [422, JSON.dump(:errors => validation_errors)]
     end
   end
 
@@ -43,10 +49,16 @@ class Microblog < Sinatra::Base
   end
 
   post "/users" do
-    user = User.new(request_json)
+    validation_errors = settings.user_validator.validate_new(request_json)
 
-    settings.user_repository.insert(user)
+    if validation_errors
+      validation_error_response validation_errors
+    else
+      user = User.new(request_json)
 
-    redirect "/users/#{user.username}"
+      settings.user_repository.insert(user)
+
+      redirect "/users/#{user.username}"
+    end
   end
 end
