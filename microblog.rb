@@ -51,14 +51,14 @@ class Microblog < Sinatra::Base
   post "/users" do
     validation_errors = settings.user_validator.validate_new(request_json)
 
-    if validation_errors
-      validation_error_response validation_errors
-    else
+    if validation_errors.empty?
       user = User.new(request_json)
 
       settings.user_repository.insert(user)
 
       redirect "/users/#{user.username}"
+    else
+      validation_error_response validation_errors
     end
   end
 end
