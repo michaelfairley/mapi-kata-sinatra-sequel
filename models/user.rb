@@ -14,6 +14,10 @@ class User
     @password = BCrypt::Password.create(raw_password)
   end
 
+  def password_hash=(hash)
+    @password = BCrypt::Password.new(hash)
+  end
+
   def as_json
     {
       :username => username,

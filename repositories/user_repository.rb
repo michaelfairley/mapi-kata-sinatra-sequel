@@ -13,7 +13,7 @@ class UserRepository
       User.new(
         :username => fields.fetch(:username),
         :real_name => fields.fetch(:realname),
-        :password => fields.fetch(:password),
+        :password_hash => fields.fetch(:password),
         :id => fields.fetch(:id),
       )
     end

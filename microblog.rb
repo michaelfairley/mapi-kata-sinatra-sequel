@@ -68,6 +68,9 @@ class Microblog < Sinatra::Base
 
   post "/tokens" do
     user = settings.user_repository.find(request_json["username"])
+    if user.nil? || user.password != request_json["password"]
+      halt 401
+    end
 
     token = Token.new_for_user(user)
     settings.token_repository.insert(token)
