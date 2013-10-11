@@ -1,6 +1,8 @@
 class User
   attr_accessor :username
   attr_accessor :real_name
+  attr_reader :password
+  attr_accessor :id
 
   def initialize(attrs)
     attrs.each do |attr, val|

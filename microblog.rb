@@ -12,6 +12,8 @@ FILES = []
 FILES << "models/user.rb"
 FILES << "repositories/user_repository.rb"
 FILES << "validators/user_validator.rb"
+FILES << "models/token.rb"
+FILES << "repositories/token_repository.rb"
 
 FILES.each do |file|
   load File.join(File.dirname(__FILE__), file)
@@ -29,6 +31,7 @@ class Microblog < Sinatra::Base
     db = Sequel.connect('postgres://localhost/microblog_api_kata')
     set :user_repository, UserRepository.new(db)
     set :user_validator, UserValidator.new(settings.user_repository)
+    set :token_repository, TokenRepository.new(db)
   end
 
   before do
@@ -61,5 +64,14 @@ class Microblog < Sinatra::Base
     else
       validation_error_response validation_errors
     end
+  end
+
+  post "/tokens" do
+    user = settings.user_repository.find(request_json["username"])
+
+    token = Token.new_for_user(user)
+    settings.token_repository.insert(token)
+
+    JSON.dump(token.as_json)
   end
 end

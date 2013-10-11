@@ -14,6 +14,7 @@ class UserRepository
         :username => fields.fetch(:username),
         :real_name => fields.fetch(:realname),
         :password => fields.fetch(:password),
+        :id => fields.fetch(:id),
       )
     end
   end
@@ -27,7 +28,8 @@ class UserRepository
   end
 
   def insert(user)
-    @ds.insert(Mapper.to_db(user))
+    id = @ds.insert(Mapper.to_db(user))
+    user.id = id
   end
 
   def contains_user_with_username?(username)
