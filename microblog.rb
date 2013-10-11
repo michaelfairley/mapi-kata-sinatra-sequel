@@ -4,6 +4,7 @@ require "sinatra/base"
 require "sinatra/reloader"
 require "json"
 require "sequel"
+require "bcrypt"
 
 $LOAD_PATH.unshift File.dirname(__FILE__)
 

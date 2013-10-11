@@ -1,12 +1,15 @@
 class User
   attr_accessor :username
-  attr_accessor :password
   attr_accessor :real_name
 
   def initialize(attrs)
     attrs.each do |attr, val|
       send("#{attr}=", val)
     end
+  end
+
+  def password=(raw_password)
+    @password = BCrypt::Password.create(raw_password)
   end
 
   def as_json
