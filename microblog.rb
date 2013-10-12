@@ -14,6 +14,8 @@ FILES << "repositories/user_repository.rb"
 FILES << "validators/user_validator.rb"
 FILES << "models/token.rb"
 FILES << "repositories/token_repository.rb"
+FILES << "models/post.rb"
+FILES << "repositories/post_repository.rb"
 
 FILES.each do |file|
   load File.join(File.dirname(__FILE__), file)
@@ -32,6 +34,7 @@ class Microblog < Sinatra::Base
     set :user_repository, UserRepository.new(db)
     set :user_validator, UserValidator.new(settings.user_repository)
     set :token_repository, TokenRepository.new(db)
+    set :post_repository, PostRepository.new(db)
   end
 
   before do
@@ -45,6 +48,20 @@ class Microblog < Sinatra::Base
 
     def validation_error_response(validation_errors)
       [422, JSON.dump(:errors => validation_errors)]
+    end
+
+    def user_from_token
+      if request.env['HTTP_AUTHENTICATION']
+        token_value = request.env['HTTP_AUTHENTICATION'][/Token (.*)/, 1]
+        token = settings.token_repository.find(token_value)
+        if token
+          settings.user_repository.find_by_id(token.user_id)
+        else
+          nil
+        end
+      else
+        nil
+      end
     end
   end
 
@@ -76,5 +93,32 @@ class Microblog < Sinatra::Base
     settings.token_repository.insert(token)
 
     JSON.dump(token.as_json)
+  end
+
+  post "/users/:username/posts" do
+    user = user_from_token
+
+    if user.nil?
+      halt 401
+    end
+
+    if user.username != params[:username]
+      halt 403
+    end
+
+    post = Post.new(
+      :text => request_json["text"],
+      :user_id => user.id
+    )
+
+    settings.post_repository.insert(post)
+
+    redirect "/posts/#{post.id}"
+  end
+
+  get "/posts/:id" do
+    post = settings.post_repository.find(params[:id])
+
+    JSON.dump(post.as_json(settings.user_repository))
   end
 end

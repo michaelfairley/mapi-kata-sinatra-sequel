@@ -23,4 +23,8 @@ class TokenRepository
   def insert(token)
     @ds.insert(Mapper.to_db(token))
   end
+
+  def find(value)
+    Mapper.from_db(@ds.where(:value => value).first)
+  end
 end

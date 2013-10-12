@@ -27,6 +27,10 @@ class UserRepository
     Mapper.from_db(@ds.where(:username => username).first)
   end
 
+  def find_by_id(id)
+    Mapper.from_db(@ds.where(:id => id).first)
+  end
+
   def insert(user)
     id = @ds.insert(Mapper.to_db(user))
     user.id = id
