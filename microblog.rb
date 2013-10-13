@@ -119,6 +119,8 @@ class Microblog < Sinatra::Base
   get "/posts/:id" do
     post = settings.post_repository.find(params[:id])
 
+    halt 404  if post.nil?
+
     JSON.dump(post.as_json(settings.user_repository))
   end
 end
