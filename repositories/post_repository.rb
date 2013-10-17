@@ -29,4 +29,8 @@ class PostRepository
   def find(id)
     Mapper.from_db(@ds.where(:id => id).first)
   end
+
+  def delete(post)
+    @ds.where(:id => post.id).delete
+  end
 end

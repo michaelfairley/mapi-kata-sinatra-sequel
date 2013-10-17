@@ -118,9 +118,22 @@ class Microblog < Sinatra::Base
 
   get "/posts/:id" do
     post = settings.post_repository.find(params[:id])
-
     halt 404  if post.nil?
 
     JSON.dump(post.as_json(settings.user_repository))
+  end
+
+  delete "/posts/:id" do
+    post = settings.post_repository.find(params[:id])
+    halt 404  if post.nil?
+
+    halt 401  if user_from_token.nil?
+    if post.user_id != user_from_token.id
+      halt 403
+    end
+
+    settings.post_repository.delete(post)
+
+    204
   end
 end
