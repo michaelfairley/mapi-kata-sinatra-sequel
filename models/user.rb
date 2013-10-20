@@ -11,7 +11,7 @@ class User
   end
 
   def password=(raw_password)
-    @password = BCrypt::Password.create(raw_password)
+    @password = BCrypt::Password.create(raw_password, :cost => 4)
   end
 
   def password_hash=(hash)

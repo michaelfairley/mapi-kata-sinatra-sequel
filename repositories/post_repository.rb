@@ -30,6 +30,13 @@ class PostRepository
     Mapper.from_db(@ds.where(:id => id).first)
   end
 
+  def find_page_for_user(user, after=nil)
+    cursor = after.nil? ? @ds : @ds.where{ id < after }
+
+    post_tuples = cursor.where(:user_id => user.id).limit(50).reverse_order(:id).all
+    post_tuples.map{ |p| Mapper.from_db(p) }
+  end
+
   def delete(post)
     @ds.where(:id => post.id).delete
   end

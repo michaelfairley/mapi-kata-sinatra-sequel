@@ -9,8 +9,8 @@ class Post
     end
   end
 
-  def as_json(user_repository)
-    author = user_repository.find_by_id(user_id)
+  def as_json(author)
+    raise  unless author.id == user_id
     {
       :id => id,
       :text => text,

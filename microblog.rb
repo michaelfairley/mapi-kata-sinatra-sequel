@@ -120,7 +120,10 @@ class Microblog < Sinatra::Base
     post = settings.post_repository.find(params[:id])
     halt 404  if post.nil?
 
-    JSON.dump(post.as_json(settings.user_repository))
+    author = settings.user_repository.find_by_id(post.user_id)
+    raise  if author.nil?
+
+    JSON.dump(post.as_json(author))
   end
 
   delete "/posts/:id" do
@@ -135,5 +138,17 @@ class Microblog < Sinatra::Base
     settings.post_repository.delete(post)
 
     204
+  end
+
+  get "/users/:username/posts" do
+    user = settings.user_repository.find(params[:username])
+
+    halt 404  if user.nil?
+
+    posts = settings.post_repository.find_page_for_user(user, params[:after])
+
+    posts_as_json = posts.map{ |p| p.as_json(user) }
+
+    JSON.dump(:posts => posts_as_json, :next => to("/users/#{user.username}/posts?after=#{posts.last.id}"))
   end
 end
