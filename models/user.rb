@@ -18,10 +18,12 @@ class User
     @password = BCrypt::Password.new(hash)
   end
 
-  def as_json
+  def as_json(followers, following)
     {
       :username => username,
       :real_name => real_name,
+      :followers => followers.map(&:username),
+      :following => following.map(&:username),
     }
   end
 end

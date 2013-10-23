@@ -21,6 +21,7 @@ class UserRepository
 
   def initialize(db)
     @ds = db[:users]
+    @following_ds = db[:followings]
   end
 
   def find(username)
@@ -38,5 +39,27 @@ class UserRepository
 
   def contains_user_with_username?(username)
     @ds.where(:username => username).count > 0
+  end
+
+  def find_followers(user)
+    @ds.join(:followings, :follower_id => :id).
+      where(:followee_id => user.id).
+      all.
+      map{ |u| Mapper.from_db(u) }
+  end
+
+  def find_followees(user)
+    @ds.join(:followings, :followee_id => :id).
+      where(:follower_id => user.id).
+      all.
+      map{ |u| Mapper.from_db(u) }
+  end
+
+  def follow!(follower, followee)
+    @following_ds.insert(
+      :follower_id => follower.id,
+      :followee_id => followee.id,
+    )
+  rescue Sequel::UniqueConstraintViolation
   end
 end

@@ -66,7 +66,12 @@ class Microblog < Sinatra::Base
   end
 
   get "/users/:username" do
-    JSON.dump(settings.user_repository.find(params[:username]).as_json)
+    user = settings.user_repository.find(params[:username])
+
+    followers = settings.user_repository.find_followers(user)
+    following = settings.user_repository.find_followees(user)
+
+    JSON.dump(user.as_json(followers, following))
   end
 
   post "/users" do
@@ -150,5 +155,19 @@ class Microblog < Sinatra::Base
     posts_as_json = posts.map{ |p| p.as_json(user) }
 
     JSON.dump(:posts => posts_as_json, :next => to("/users/#{user.username}/posts?after=#{posts.last.id}"))
+  end
+
+  put "/users/:username/:following/:other" do
+    user = user_from_token
+    halt 401  if user.nil?
+    if params[:username] != user.username
+      halt 403
+    end
+
+    followee = settings.user_repository.find(params[:other])
+
+    settings.user_repository.follow!(user, followee)
+
+    201
   end
 end
