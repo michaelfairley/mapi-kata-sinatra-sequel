@@ -62,4 +62,11 @@ class UserRepository
     )
   rescue Sequel::UniqueConstraintViolation
   end
+
+  def unfollow!(follower, followee)
+    @following_ds.where(
+      :follower_id => follower.id,
+      :followee_id => followee.id,
+    ).delete
+  end
 end

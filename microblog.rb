@@ -170,4 +170,24 @@ class Microblog < Sinatra::Base
 
     201
   end
+
+  delete "/users/:username/:following/:other" do
+    user = user_from_token
+    halt 401  if user.nil?
+    if params[:username] != user.username
+      halt 403
+    end
+
+    followee = settings.user_repository.find(params[:other])
+
+    num_deleted = settings.user_repository.unfollow!(user, followee)
+
+    case num_deleted
+    when 0
+      404
+    when 1
+      204
+    else;raise
+    end
+  end
 end
