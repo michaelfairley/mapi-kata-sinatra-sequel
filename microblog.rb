@@ -150,7 +150,7 @@ class Microblog < Sinatra::Base
 
     halt 404  if user.nil?
 
-    posts = settings.post_repository.find_page_for_user(user, params[:after])
+    posts = settings.post_repository.find_page(user, params[:after])
 
     posts_as_json = posts.map{ |p| p.as_json(user) }
 
@@ -189,5 +189,16 @@ class Microblog < Sinatra::Base
       204
     else;raise
     end
+  end
+
+  get "/users/:username/timeline" do
+    user = settings.user_repository.find(params[:username])
+    followees = settings.user_repository.find_followees(user)
+
+    posts = settings.post_repository.find_page(followees, params[:after])
+
+    posts_as_json = posts.map{ |p| p.as_json(followees.find{ |f| f.id == p.user_id }) }
+
+    JSON.dump(:posts => posts_as_json, :next => to("/users/#{user.username}/timeline?after=#{posts.last.id}"))
   end
 end
